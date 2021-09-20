@@ -29,7 +29,7 @@ islands = c("Kauai", #1
 load("MHI_islands_shp.RData")
 crs(ISL_bounds) = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 world = ISL_bounds[which(ISL_bounds$ISLAND %in% toupper(islands)),]
-world = st_transform(st_as_sf(ISL_this))
+world = st_transform(st_as_sf(world))
 
 hawaii  <- ggplot(data = world) +
   geom_sf(fill = "gray20", colour="grey20") +
