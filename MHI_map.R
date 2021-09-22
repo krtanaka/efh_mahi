@@ -3,8 +3,6 @@ library(ggplot2)
 library(rnaturalearth)
 library(marmap)
 library(raster)
-library(GEOmap)
-library(extrafont)
 
 rm(list = ls())
 
@@ -19,10 +17,10 @@ df$lat = as.numeric(cd)
 
 world <- ne_countries(scale = "large", returnclass = "sf")
 
-b_MHI = marmap::getNOAA.bathy(lon1 = min(-160.6),
-                              lon2 = max(-154.8),
-                              lat1 = min(18.9),
-                              lat2 = max(22.25),
+b_MHI = marmap::getNOAA.bathy(lon1 = min(-161),
+                              lon2 = max(-154),
+                              lat1 = min(18),
+                              lat2 = max(23),
                               resolution = 1)
 
 b_Oahu = marmap::getNOAA.bathy(lon1 = min(-159),
@@ -90,40 +88,39 @@ scale_y_latitude <- function(ymin = -90, ymax = 90, step = 0.002, ...) {
   coord_sf(crs = st_crs(4135),   # old hawaii projection code
            xlim = c(-159, -157),
            ylim = c(20.5, 22),
-           expand = F,
-           datum = NA) +
+           expand = F) +
   geom_text(data = df, aes(lon, lat, label = id)) +
   geom_contour(data = b_Oahu,
                aes(x = x, y = y, z = z),
                breaks = c(-50, -100, -1000),
-               size = c(0.05),
-               alpha = 0.5,
+               size = c(0.1),
                colour = "grey20") +
   scale_x_continuous(breaks = seq(-159, -157, by = 0.1)) +
   scale_y_continuous(breaks = seq(20, 22, by = 0.1)) +
-  theme_minimal() +
+    theme_bw() +
   theme(axis.title = element_blank(),
-        # axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1.0),
-        axis.text = element_blank()))
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 
 (mhi = ggplot() +
   geom_sf(data = world, fill = "grey40", colour="grey40") +
   coord_sf(crs = st_crs(4135),   # old hawaii projection code
-           xlim = c(-161.5, -154.5),
-           ylim = c(18, 22.8), expand = F) +
+           xlim = c(-161.5, -154.4),
+           ylim = c(18, 22.3), expand = F) +
   geom_contour(data = b_MHI,
                aes(x = x, y = y, z = z),
                breaks = c(-50, -100, -1000),
                size = c(0.05),
-               alpha = 0.5,
+               # alpha = 0.8,
                colour = "grey20") +
-  scale_x_continuous(breaks = seq(-160.5, -154, by = 1)) +
-  scale_y_continuous(breaks = seq(18.5, 22.5, by = 1)) +
-  theme_minimal() +
+  # scale_x_continuous(breaks = seq(-160.5, -154, by = 0.5)) +
+  # scale_y_continuous(breaks = seq(18.5, 22.5, by = 0.5)) +
+    theme_bw() +
   theme(axis.title = element_blank()))
 
+pdf('/Users/kisei/Desktop/oahu.pdf', height = 5, width = 6)
+print(oahu)
+dev.off()
 
-
-pdf('/Users/Kisei.Tanaka/Desktop/mahi_map.pdf', height = 8, width = 12)
-print(hawaii)
+pdf('/Users/kisei/Desktop/mhi.pdf', height = 6, width = 9)
+print(mhi)
 dev.off()
