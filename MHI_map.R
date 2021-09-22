@@ -8,37 +8,37 @@ library(extrafont)
 
 rm(list = ls())
 
-df = read.csv('EFH Gut Content_Sampling Effort_Oahu.csv')
-df = df %>% subset(Species == "Mahi")
-df$Sex. = ifelse(df$Sex. == "female", "Female", df$Sex.)
-df$Sex. = ifelse(df$Sex. == "", "Unknown", df$Sex.)
-df$Sex. = ifelse(df$Sex. == "not recorded", "Not recorded", df$Sex.)
-df$Sex. = ifelse(df$Sex. %in% c("Unknown", "Not recorded"), "Not recorded / Unknown", df$Sex.)
-df = df %>% subset(Lon != "")
-chd = "°"
+df = read.csv('Oahu_FADS_Buoy_Locations.csv'); df
+chd = "-"
 chm = "'"
-chs = "\""
-cd = char2dms(df$Lon, chd= chd, chm = chm, chs = chs)
-df$Lon = as.numeric(cd)
-cd = char2dms(df$Lat, chd= chd, chm = chm, chs = chs)
-df$Lat = as.numeric(cd)
-
-df$Year = substr(df$Date, 1, 4)
-df$Month = substr(df$Date, 5, 6)
-df$Day = substr(df$Date, 7, 8)
+# chs = "\""
+cd = char2dms(df$lon, chd = chd, chm = chm)
+df$lon = as.numeric(cd)
+cd = char2dms(df$lat, chd= chd, chm = chm)
+df$lat = as.numeric(cd)
 
 world <- ne_countries(scale = "large", returnclass = "sf")
 
-b = marmap::getNOAA.bathy(lon1 = min(-158.6),
-                          lon2 = max(-157),
-                          lat1 = min(21.01),
-                          lat2 = max(21.99),
-                          resolution = 1)
+b_MHI = marmap::getNOAA.bathy(lon1 = min(-160.6),
+                              lon2 = max(-154.8),
+                              lat1 = min(18.9),
+                              lat2 = max(22.25),
+                              resolution = 1)
 
-b = marmap::fortify.bathy(b)
-b$z = ifelse(b$z < 0, b$z, NA)
-b$z = b$z * 0.5468066492 # m to fathoms
-summary(b$z)
+b_Oahu = marmap::getNOAA.bathy(lon1 = min(-159),
+                               lon2 = max(-157),
+                               lat1 = min(20.5),
+                               lat2 = max(22),
+                               resolution = 1)
+
+b_MHI = marmap::fortify.bathy(b_MHI)
+b_Oahu = marmap::fortify.bathy(b_Oahu)
+
+b_MHI$z = ifelse(b_MHI$z < 0, b_MHI$z, NA)
+b_MHI$z = b_MHI$z * 0.5468066492 # m to fathoms
+
+b_Oahu$z = ifelse(b_Oahu$z < 0, b_Oahu$z, NA)
+b_Oahu$z = b_Oahu$z * 0.5468066492 # m to fathoms
 
 islands = c("Kauai", #1
             "Lehua", #2
@@ -56,8 +56,9 @@ load("MHI_islands_shp.RData")
 crs(ISL_bounds) = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
 world = ISL_bounds[which(ISL_bounds$ISLAND %in% toupper(islands)),]
 world = st_transform(st_as_sf(world))
+world = rmapshaper::ms_simplify(world, keep = 0.01); plot(world)
 
-scale_x_longitude <- function(xmin=-180, xmax = 180, step=0.002, ...) {
+scale_x_longitude <- function(xmin = -180, xmax = 180, step = 0.002, ...) {
   xbreaks <- seq(xmin,xmax,step)
   xlabels <- unlist(
     lapply(xbreaks, function(x){
@@ -70,8 +71,7 @@ scale_x_longitude <- function(xmin=-180, xmax = 180, step=0.002, ...) {
                     abs(dms(x))))}))
   return(scale_x_continuous("Longitude", breaks = xbreaks, labels = xlabels, expand = c(0, 0), ...))
 }
-
-scale_y_latitude <- function(ymin=-90, ymax=90, step=0.002, ...) {
+scale_y_latitude <- function(ymin = -90, ymax = 90, step = 0.002, ...) {
   ybreaks <- seq(ymin,ymax,step)
   ylabels <- unlist(
     lapply(ybreaks, function(x){
@@ -85,26 +85,44 @@ scale_y_latitude <- function(ymin=-90, ymax=90, step=0.002, ...) {
   return(scale_y_continuous("Latitude", breaks = ybreaks, labels = ylabels, expand = c(0, 0), ...))
 }
 
-hawaii <- ggplot() +
+(oahu = ggplot() +
   geom_sf(data = world, fill = "grey40", colour="grey40") +
   coord_sf(crs = st_crs(4135),   # old hawaii projection code
-           xlim = c(-158.6, -157),
-           ylim = c(21.01, 21.99), expand = F) +
-  scale_x_continuous(breaks = seq(-158.6, -157, by = 0.1)) +
-  scale_y_continuous(breaks = seq(21.01, 21.99, by = 0.1)) +
-  # scale_x_longitude(-160, -155, 0.1) +
-  # scale_y_latitude(19, 22, 0.1) +
-  # ylim(21.01, 21.99) +
-  # xlim(-158.6, -157) +
-  geom_contour(data = b,
+           xlim = c(-159, -157),
+           ylim = c(20.5, 22),
+           expand = F,
+           datum = NA) +
+  geom_text(data = df, aes(lon, lat, label = id)) +
+  geom_contour(data = b_Oahu,
                aes(x = x, y = y, z = z),
-               # breaks = seq(-8000, 0, by = 200),
                breaks = c(-50, -100, -1000),
                size = c(0.05),
-               # alpha = 0.8,
-               colour = grey.colors(723)) +
+               alpha = 0.5,
+               colour = "grey20") +
+  scale_x_continuous(breaks = seq(-159, -157, by = 0.1)) +
+  scale_y_continuous(breaks = seq(20, 22, by = 0.1)) +
   theme_minimal() +
-  theme(axis.title = element_blank())
+  theme(axis.title = element_blank(),
+        # axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1.0),
+        axis.text = element_blank()))
+
+(mhi = ggplot() +
+  geom_sf(data = world, fill = "grey40", colour="grey40") +
+  coord_sf(crs = st_crs(4135),   # old hawaii projection code
+           xlim = c(-161.5, -154.5),
+           ylim = c(18, 22.8), expand = F) +
+  geom_contour(data = b_MHI,
+               aes(x = x, y = y, z = z),
+               breaks = c(-50, -100, -1000),
+               size = c(0.05),
+               alpha = 0.5,
+               colour = "grey20") +
+  scale_x_continuous(breaks = seq(-160.5, -154, by = 1)) +
+  scale_y_continuous(breaks = seq(18.5, 22.5, by = 1)) +
+  theme_minimal() +
+  theme(axis.title = element_blank()))
+
+
 
 pdf('/Users/Kisei.Tanaka/Desktop/mahi_map.pdf', height = 8, width = 12)
 print(hawaii)
