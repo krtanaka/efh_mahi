@@ -8,6 +8,25 @@ library(extrafont)
 
 rm(list = ls())
 
+df = read.csv('EFH Gut Content_Sampling Effort_Oahu.csv')
+df = df %>% subset(Species == "Mahi")
+df$Sex. = ifelse(df$Sex. == "female", "Female", df$Sex.)
+df$Sex. = ifelse(df$Sex. == "", "Unknown", df$Sex.)
+df$Sex. = ifelse(df$Sex. == "not recorded", "Not recorded", df$Sex.)
+df$Sex. = ifelse(df$Sex. %in% c("Unknown", "Not recorded"), "Not recorded / Unknown", df$Sex.)
+df = df %>% subset(Lon != "")
+chd = "°"
+chm = "'"
+chs = "\""
+cd = char2dms(df$Lon, chd= chd, chm = chm, chs = chs)
+df$Lon = as.numeric(cd)
+cd = char2dms(df$Lat, chd= chd, chm = chm, chs = chs)
+df$Lat = as.numeric(cd)
+
+df$Year = substr(df$Date, 1, 4)
+df$Month = substr(df$Date, 5, 6)
+df$Day = substr(df$Date, 7, 8)
+
 world <- ne_countries(scale = "large", returnclass = "sf")
 
 b = marmap::getNOAA.bathy(lon1 = min(-158.6),
