@@ -124,3 +124,32 @@ dev.off()
 pdf('/Users/kisei/Desktop/mhi.pdf', height = 6, width = 9)
 print(mhi)
 dev.off()
+
+world <- ne_countries(scale = 'small', returnclass = 'sf')
+
+class(world)
+
+usa <- subset(world, admin == "United States of America")
+
+(mainland <- ggplot(data = usa) +
+    geom_sf(fill = "cornsilk") +
+    coord_sf(crs = st_crs(2163),
+             xlim = c(-2500000, 2500000),
+             ylim = c(-2300000, 730000)))
+
+(hawaii  <- ggplot(data = usa) +
+    geom_sf(fill = "cornsilk") +
+    coord_sf(crs = st_crs(4135),
+             xlim = c(-161, -154),
+             ylim = c(18, 23),
+             expand = FALSE,
+             datum = NA))
+
+mainland +
+  annotation_custom(
+    grob = ggplotGrob(hawaii),
+    xmin = -1250000,
+    xmax = -1250000 + (-154 - (-161))*120000,
+    ymin = -2450000,
+    ymax = -2450000 + (23 - 18)*120000)
+
