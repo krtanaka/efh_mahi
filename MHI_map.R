@@ -84,38 +84,38 @@ scale_y_latitude <- function(ymin = -90, ymax = 90, step = 0.002, ...) {
 }
 
 (oahu = ggplot() +
-  geom_sf(data = world, fill = "grey40", colour="grey40") +
-  coord_sf(crs = st_crs(4135),   # old hawaii projection code
-           xlim = c(-159, -157),
-           ylim = c(20.5, 22),
-           expand = F) +
-  geom_text(data = df, aes(lon, lat, label = id)) +
-  geom_contour(data = b_Oahu,
-               aes(x = x, y = y, z = z),
-               breaks = c(-50, -100, -1000),
-               size = c(0.1),
-               colour = "grey20") +
-  scale_x_continuous(breaks = seq(-159, -157, by = 0.1)) +
-  scale_y_continuous(breaks = seq(20, 22, by = 0.1)) +
+    geom_sf(data = world, fill = "grey40", colour="grey40") +
+    coord_sf(crs = st_crs(4135),   # old hawaii projection code
+             xlim = c(-159, -157),
+             ylim = c(20.5, 22),
+             expand = F) +
+    geom_text(data = df, aes(lon, lat, label = id)) +
+    geom_contour(data = b_Oahu,
+                 aes(x = x, y = y, z = z),
+                 breaks = c(-50, -100, -1000),
+                 size = c(0.1),
+                 colour = "grey20") +
+    scale_x_continuous(breaks = seq(-159, -157, by = 0.1)) +
+    scale_y_continuous(breaks = seq(20, 22, by = 0.1)) +
     theme_bw() +
-  theme(axis.title = element_blank(),
-        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
+    theme(axis.title = element_blank(),
+          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
 
 (mhi = ggplot() +
-  geom_sf(data = world, fill = "grey40", colour="grey40") +
-  coord_sf(crs = st_crs(4135),   # old hawaii projection code
-           xlim = c(-161.5, -154.4),
-           ylim = c(18, 22.3), expand = F) +
-  geom_contour(data = b_MHI,
-               aes(x = x, y = y, z = z),
-               breaks = c(-50, -100, -1000),
-               size = c(0.05),
-               # alpha = 0.8,
-               colour = "grey20") +
-  # scale_x_continuous(breaks = seq(-160.5, -154, by = 0.5)) +
-  # scale_y_continuous(breaks = seq(18.5, 22.5, by = 0.5)) +
+    geom_sf(data = world, fill = "grey40", colour="grey40") +
+    coord_sf(crs = st_crs(4135),   # old hawaii projection code
+             xlim = c(-161.5, -154.4),
+             ylim = c(18, 22.3), expand = F) +
+    geom_contour(data = b_MHI,
+                 aes(x = x, y = y, z = z),
+                 breaks = c(-50, -100, -1000),
+                 size = c(0.05),
+                 # alpha = 0.8,
+                 colour = "grey20") +
+    # scale_x_continuous(breaks = seq(-160.5, -154, by = 0.5)) +
+    # scale_y_continuous(breaks = seq(18.5, 22.5, by = 0.5)) +
     theme_bw() +
-  theme(axis.title = element_blank()))
+    theme(axis.title = element_blank()))
 
 pdf('/Users/kisei/Desktop/oahu.pdf', height = 5, width = 6)
 print(oahu)
@@ -125,31 +125,10 @@ pdf('/Users/kisei/Desktop/mhi.pdf', height = 6, width = 9)
 print(mhi)
 dev.off()
 
-world <- ne_countries(scale = 'small', returnclass = 'sf')
+mahi_map = ggdraw() +
+    draw_plot(mhi) +
+    draw_plot(oahu, x = 0, y = 0.08, width = 0.55, height = 0.55)
 
-class(world)
-
-usa <- subset(world, admin == "United States of America")
-
-(mainland <- ggplot(data = usa) +
-    geom_sf(fill = "cornsilk") +
-    coord_sf(crs = st_crs(2163),
-             xlim = c(-2500000, 2500000),
-             ylim = c(-2300000, 730000)))
-
-(hawaii  <- ggplot(data = usa) +
-    geom_sf(fill = "cornsilk") +
-    coord_sf(crs = st_crs(4135),
-             xlim = c(-161, -154),
-             ylim = c(18, 23),
-             expand = FALSE,
-             datum = NA))
-
-mainland +
-  annotation_custom(
-    grob = ggplotGrob(hawaii),
-    xmin = -1250000,
-    xmax = -1250000 + (-154 - (-161))*120000,
-    ymin = -2450000,
-    ymax = -2450000 + (23 - 18)*120000)
-
+pdf('/Users/kisei/Desktop/mhi_oahu.pdf', height = 6, width = 9)
+print(mahi_map)
+dev.off()
