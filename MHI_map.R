@@ -3,6 +3,7 @@ library(ggplot2)
 library(rnaturalearth)
 library(marmap)
 library(raster)
+library(sp)
 
 rm(list = ls())
 
@@ -24,9 +25,9 @@ b_MHI = marmap::getNOAA.bathy(lon1 = min(-161),
                               resolution = 1)
 
 b_Oahu = marmap::getNOAA.bathy(lon1 = min(-159),
-                               lon2 = max(-157),
-                               lat1 = min(20.5),
-                               lat2 = max(22),
+                               lon2 = max(-156),
+                               lat1 = min(20),
+                               lat2 = max(23),
                                resolution = 1)
 
 b_MHI = marmap::fortify.bathy(b_MHI)
@@ -86,8 +87,8 @@ scale_y_latitude <- function(ymin = -90, ymax = 90, step = 0.002, ...) {
 (oahu = ggplot() +
     geom_sf(data = world, fill = "grey40", colour="grey40") +
     coord_sf(crs = st_crs(4135),   # old hawaii projection code
-             xlim = c(-159, -157),
-             ylim = c(20.5, 22),
+             xlim = c(-159.1, -156.8),
+             ylim = c(20.5, 22.4),
              expand = F) +
     geom_text(data = df, aes(lon, lat, label = id)) +
     geom_contour(data = b_Oahu,
@@ -95,8 +96,8 @@ scale_y_latitude <- function(ymin = -90, ymax = 90, step = 0.002, ...) {
                  breaks = c(-50, -100, -1000),
                  size = c(0.1),
                  colour = "grey20") +
-    scale_x_continuous(breaks = seq(-159, -157, by = 0.1)) +
-    scale_y_continuous(breaks = seq(20, 22, by = 0.1)) +
+    scale_x_continuous(breaks = seq(-159, -156, by = 0.1)) +
+    scale_y_continuous(breaks = seq(20, 24, by = 0.1)) +
     theme_bw() +
     theme(axis.title = element_blank(),
           axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)))
@@ -117,7 +118,7 @@ scale_y_latitude <- function(ymin = -90, ymax = 90, step = 0.002, ...) {
     theme_bw() +
     theme(axis.title = element_blank()))
 
-pdf('/Users/kisei/Desktop/oahu.pdf', height = 5, width = 6)
+pdf('/Users/Kisei.Tanaka//Desktop/oahu.pdf', height = 5, width = 6)
 print(oahu)
 dev.off()
 
