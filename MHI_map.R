@@ -3,6 +3,7 @@ library(ggplot2)
 library(rnaturalearth)
 library(marmap)
 library(raster)
+library(sp)
 
 rm(list = ls())
 
