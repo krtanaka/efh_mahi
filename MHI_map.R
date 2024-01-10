@@ -90,7 +90,7 @@ scale_y_latitude <- function(ymin = -90, ymax = 90, step = 0.002, ...) {
              xlim = c(-159.1, -156.8),
              ylim = c(20.5, 22.4),
              expand = F) +
-    geom_text(data = df, aes(lon, lat, label = id)) +
+    # geom_text(data = df, aes(lon, lat, label = id)) +
     geom_contour(data = b_Oahu,
                  aes(x = x, y = y, z = z),
                  breaks = c(-50, -100, -1000),
@@ -118,7 +118,7 @@ scale_y_latitude <- function(ymin = -90, ymax = 90, step = 0.002, ...) {
     theme_bw() +
     theme(axis.title = element_blank()))
 
-pdf('/Users/Kisei.Tanaka//Desktop/oahu.pdf', height = 5, width = 6)
+pdf('/Users/kisei.tanaka/Desktop/oahu.pdf', height = 5, width = 6)
 print(oahu)
 dev.off()
 
